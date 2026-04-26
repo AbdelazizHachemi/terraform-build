@@ -26,12 +26,19 @@ jobs:
             }
           }
           EOF
+          # Image ENTRYPOINT is `terraform` — pass subcommands only (not `sh -c`).
           docker run --rm \
             -v "$GITHUB_WORKSPACE/work:/work" \
             -v "$GITHUB_WORKSPACE/mirror:/mirror" \
             -w /work \
             hashicorp/terraform:1.7.5 \
-            sh -c 'terraform init -input=false && terraform providers mirror /mirror'
+            init -input=false
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/work:/work" \
+            -v "$GITHUB_WORKSPACE/mirror:/mirror" \
+            -w /work \
+            hashicorp/terraform:1.7.5 \
+            providers mirror /mirror
           test -d mirror/registry.terraform.io
           ( cd mirror && tar -czf "$GITHUB_WORKSPACE/terraform-filesystem-mirror.tgz" . )
 
